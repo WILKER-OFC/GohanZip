@@ -3,42 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GohanZip Creador WILKER 2026</title>
+    <title>GohanZip - Sube y comparte tus archivos</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <header>
         <div class="container">
-            <h1>GohanZip Subir Archivos zip etc</h1>
-            <p>Sube y comparte tus archivos fácilmente</p>
+            <h1 class="logo">Gohan<span>Zip</span></h1>
         </div>
     </header>
 
     <main class="container">
-        <section class="upload-section">
-            <div class="upload-card">
-                <h2>Subir Archivo</h2>
-                <form id="uploadForm">
-                    <input type="file" id="fileInput" name="file" required>
-                    <button type="submit" id="uploadBtn">Subir a GohanZip</button>
-                </form>
-                <div id="status"></div>
+        <div class="upload-card">
+            <div class="upload-icon">
+                <i class="fas fa-cloud-upload-alt"></i>
             </div>
-        </section>
+            <h2>Sube tus archivos</h2>
+            <p>Rápido, seguro y fácil como Mediafire.</p>
+            
+            <div class="upload-area" id="drop-area">
+                <input type="file" id="fileElem" hidden>
+                <label class="button" for="fileElem">Seleccionar archivos</label>
+                <p>o arrastra y suelta aquí</p>
+            </div>
 
-        <section class="files-section">
-            <h2>Archivos Recientes</h2>
-            <div id="fileList" class="file-list">
-                <!-- Los archivos se cargarán aquí -->
-                <p>Cargando archivos...</p>
+            <div id="progress-container" style="display: none;">
+                <div class="progress-bar">
+                    <div id="progress" style="width: 0%;"></div>
+                </div>
+                <p id="status-text">Subiendo...</p>
             </div>
-        </section>
+
+            <div id="result-area" style="display: none;">
+                <h3>¡Archivo subido con éxito!</h3>
+                <div class="link-box">
+                    <input type="text" id="share-link" readonly>
+                    <button id="copy-btn"><i class="fas fa-copy"></i> Copiar</button>
+                </div>
+                <button id="upload-more" class="secondary-btn">Subir otro archivo</button>
+            </div>
+        </div>
     </main>
 
     <footer>
-        <div class="container">
-            <p>&copy; 2026 GohanZip Creador WILKER - Todos los derechos reservados</p>
-        </div>
+        <p>&copy; 2026 GohanZip - Hecho por WILKER OFC</p>
     </footer>
 
     <script src="script.js"></script>
