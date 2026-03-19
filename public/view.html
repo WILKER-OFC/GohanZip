@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descargar - GohanZip</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1 class="logo">Gohan<span>Zip</span></h1>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="download-card">
+            <div class="file-icon">
+                <i class="fas fa-file-archive"></i>
+            </div>
+            <h2 id="file-name">Cargando archivo...</h2>
+            <div class="file-info">
+                <p>Tamaño: <span id="file-size">Calculando...</span></p>
+                <p>Fecha: <span id="file-date">Desconocida</span></p>
+            </div>
+            <a href="#" id="download-btn" class="button">Descargar ahora <i class="fas fa-download"></i></a>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 GohanZip - Hecho por WILKER OFC 🇻🇪</p>
+    </footer>
+
+    <script>
+        const fileId = window.location.pathname.split('/').pop();
+        
+        async function loadFileInfo() {
+            try {
+                const response = await fetch(`/api/file/${fileId}`);
+                if (!response.ok) throw new Error('Archivo no encontrado');
+                
+                const data = await response.json();
+                document.getElementById('file-name').innerText = data.originalName;
+                document.getElementById('file-size').innerText = (data.size / (1024 * 1024)).toFixed(2) + ' MB';
+                document.getElementById('file-date').innerText = new Date(data.uploadDate).toLocaleDateString();
+                document.getElementById('download-btn').href = `/download/${fileId}`;
+            } catch (error) {
+                document.querySelector('.download-card').innerHTML = `
+                    <div class="error-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <h2>Error 404</h2>
+                    <p>El archivo que buscas no existe o ha expirado.</p>
+                    <a href="/" class="button">Volver al inicio</a>
+                `;
+            }
+        }
+
+        loadFileInfo();
+    </script>
+</body>
+</html>
