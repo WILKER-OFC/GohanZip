@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GohanZip Creador WILKER 2026</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>GohanZip Subir Archivos zip etc</h1>
+            <p>Sube y comparte tus archivos fácilmente</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="upload-section">
+            <div class="upload-card">
+                <h2>Subir Archivo</h2>
+                <form id="uploadForm">
+                    <input type="file" id="fileInput" name="file" required>
+                    <button type="submit" id="uploadBtn">Subir a GohanZip</button>
+                </form>
+                <div id="status"></div>
+            </div>
+        </section>
+
+        <section class="files-section">
+            <h2>Archivos Recientes</h2>
+            <div id="fileList" class="file-list">
+                <!-- Los archivos se cargarán aquí -->
+                <p>Cargando archivos...</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 GohanZip Creador WILKER - Todos los derechos reservados</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
