@@ -1,100 +1,112 @@
-const uploadForm = document.getElementById('uploadForm');
-const fileInput = document.getElementById('fileInput');
-const uploadBtn = document.getElementById('uploadBtn');
-const statusDiv = document.getElementById('status');
-const fileListDiv = document.getElementById('fileList');
+const dropArea = document.getElementById('drop-area');
+const fileInput = document.getElementById('fileElem');
+const progressContainer = document.getElementById('progress-container');
+const progressBar = document.getElementById('progress');
+const statusText = document.getElementById('status-text');
+const resultArea = document.getElementById('result-area');
+const shareLinkInput = document.getElementById('share-link');
+const copyBtn = document.getElementById('copy-btn');
+const uploadMoreBtn = document.getElementById('upload-more');
 
-// Cargar la lista de archivos al iniciar
-document.addEventListener('DOMContentLoaded', fetchFileList);
+// Handle Drag and Drop
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false);
+});
 
-// Manejar la subida de archivos
-uploadForm.addEventListener('submit', async (e) => {
+function preventDefaults(e) {
     e.preventDefault();
-    
-    if (!fileInput.files[0]) {
-        showStatus('Por favor selecciona un archivo', 'error');
-        return;
+    e.stopPropagation();
+}
+
+['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, () => dropArea.classList.add('dragging'), false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, () => dropArea.classList.remove('dragging'), false);
+});
+
+dropArea.addEventListener('drop', handleDrop, false);
+
+function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    handleFiles(files);
+}
+
+// Handle File Input Selection
+fileInput.addEventListener('change', function() {
+    handleFiles(this.files);
+});
+
+function handleFiles(files) {
+    if (files.length > 0) {
+        uploadFile(files[0]);
     }
+}
 
+function uploadFile(file) {
     const formData = new FormData();
-    formData.append('file', fileInput.files[0]);
+    formData.append('file', file);
 
-    uploadBtn.disabled = true;
-    showStatus('Subiendo...', 'info');
+    const xhr = new XMLHttpRequest();
+    
+    // UI Update
+    dropArea.style.display = 'none';
+    progressContainer.style.display = 'block';
+    resultArea.style.display = 'none';
+    statusText.innerText = 'Subiendo ' + file.name + '...';
 
-    try {
-        const response = await fetch('/upload', {
-            method: 'POST',
-            body: formData
-        });
-
-        if (response.ok) {
-            showStatus('¡Archivo subido con éxito!', 'success');
-            fileInput.value = '';
-            fetchFileList();
-        } else {
-            showStatus('Error al subir el archivo', 'error');
+    xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+            const percentComplete = (e.loaded / e.total) * 100;
+            progressBar.style.width = percentComplete + '%';
         }
-    } catch (error) {
-        console.error('Error:', error);
-        showStatus('Error de conexión', 'error');
-    } finally {
-        uploadBtn.disabled = false;
+    });
+
+    xhr.onreadystatechange = () => {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                showResult(response.downloadLink);
+            } else {
+                alert('Error al subir el archivo');
+                resetUI();
+            }
+        }
+    };
+
+    xhr.open('POST', '/upload', true);
+    xhr.send(formData);
+}
+
+function showResult(link) {
+    progressContainer.style.display = 'none';
+    resultArea.style.display = 'block';
+    shareLinkInput.value = link;
+}
+
+function resetUI() {
+    dropArea.style.display = 'block';
+    progressContainer.style.display = 'none';
+    resultArea.style.display = 'none';
+    progressBar.style.width = '0%';
+    fileInput.value = '';
+}
+
+copyBtn.addEventListener('click', async () => {
+    try {
+        await navigator.clipboard.writeText(shareLinkInput.value);
+        copyBtn.innerText = '¡Copiado!';
+        setTimeout(() => {
+            copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copiar';
+        }, 2000);
+    } catch (err) {
+        console.error('Error al copiar: ', err);
+        // Fallback for older browsers
+        shareLinkInput.select();
+        document.execCommand('copy');
     }
 });
 
-// Obtener la lista de archivos del servidor
-async function fetchFileList() {
-    try {
-        const response = await fetch('/files');
-        const files = await response.json();
-        
-        if (files.length === 0) {
-            fileListDiv.innerHTML = '<p>No hay archivos disponibles aún.</p>';
-            return;
-        }
-
-        // Limpiar el contenedor antes de renderizar
-        fileListDiv.innerHTML = '';
-
-        files.forEach(file => {
-            const fileItem = document.createElement('div');
-            fileItem.className = 'file-item';
-
-            const icon = document.createElement('div');
-            icon.className = 'file-icon';
-            icon.textContent = '📄';
-
-            const name = document.createElement('div');
-            name.className = 'file-name';
-            name.textContent = file.name; // SEGURO: Evita XSS
-
-            const downloadLink = document.createElement('a');
-            downloadLink.href = file.url;
-            downloadLink.className = 'download-link';
-            downloadLink.textContent = 'Descargar';
-            downloadLink.setAttribute('download', file.name);
-
-            fileItem.appendChild(icon);
-            fileItem.appendChild(name);
-            fileItem.appendChild(downloadLink);
-            fileListDiv.appendChild(fileItem);
-        });
-    } catch (error) {
-        console.error('Error al cargar archivos:', error);
-        fileListDiv.innerHTML = '<p>Error al cargar la lista de archivos.</p>';
-    }
-}
-
-function showStatus(message, type) {
-    statusDiv.textContent = message;
-    statusDiv.className = type;
-    
-    if (type === 'success') {
-        statusDiv.style.color = '#28a745';
-    } else if (type === 'error') {
-        statusDiv.style.color = '#dc3545';
-    } else {
-        statusDiv.style.color = '#0070f3';
-    }
-}
+uploadMoreBtn.addEventListener('click', resetUI);
